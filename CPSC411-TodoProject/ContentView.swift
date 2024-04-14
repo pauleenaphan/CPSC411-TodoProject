@@ -1,5 +1,6 @@
 // ContentView.swift
 import SwiftUI
+import Foundation
 
 struct ContentView: View {
     //key for storing todo items in userdefault
@@ -8,6 +9,10 @@ struct ContentView: View {
     //user inputs
     @State private var newTodoTitle = ""
     @State private var newTodoDescription = ""
+    @State private var newTodoDueDate = Date()
+    
+    // For date choosing
+    @State private var showingDatePicker = false
     
     //array to hold the todo items
     @State private var todos: [TodoItem] = []
@@ -20,6 +25,9 @@ struct ContentView: View {
                         Text(todo.title)
                             .font(.headline)
                         Text(todo.description)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Text(formatDate(todo.dueDate))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -39,6 +47,30 @@ struct ContentView: View {
                 TextField("Description", text: $newTodoDescription)
                     .padding()
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                TextField("DueDate", text: Binding<String>(
+                    get: {
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "MM-dd-yyyy"
+                        return dateFormatter.string(from: self.newTodoDueDate)
+                    },
+                    set: { newValue in
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "MM-dd-yyyy"
+                        if let newDate = dateFormatter.date(from: newValue) {
+                            self.newTodoDueDate = newDate
+                        }
+                    }))
+                    .onTapGesture {
+                        self.showingDatePicker = true
+                    }
+                    .padding()
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    if showingDatePicker {
+                        DatePicker("Select a due date: ", selection: $newTodoDueDate, displayedComponents: .date)
+                            .datePickerStyle(DefaultDatePickerStyle())
+                            .labelsHidden()
+                    }
             }
         }
         .onAppear {
@@ -49,11 +81,11 @@ struct ContentView: View {
     
     //adds the todo item to userdefault storage
     private func addTodo() {
-        guard !newTodoTitle.isEmpty && !newTodoDescription.isEmpty else {
+        guard !newTodoTitle.isEmpty && !newTodoDescription.isEmpty && newTodoDueDate != Date() else {
             return
         }
         
-        let todo = TodoItem(title: newTodoTitle, description: newTodoDescription)
+        let todo = TodoItem(title: newTodoTitle, description: newTodoDescription, dueDate: newTodoDueDate)
         
         //adds todo to the array
         todos.append(todo)
@@ -64,6 +96,7 @@ struct ContentView: View {
         //removes the user input in the view
         newTodoTitle = ""
         newTodoDescription = ""
+        newTodoDueDate = Date()
     }
     
     //function to save the todos to the storage
@@ -86,6 +119,12 @@ struct ContentView: View {
             }
         }
     }
+}
+
+func formatDate(_ date: Date) -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "MM-dd-yyyy"
+    return dateFormatter.string(from: date)
 }
 
 struct ContentView_Previews: PreviewProvider {
