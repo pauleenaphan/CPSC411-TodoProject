@@ -20,16 +20,26 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack {
-                List(todos) { todo in
-                    VStack(alignment: .leading) {
-                        Text(todo.title)
-                            .font(.headline)
-                        Text(todo.description)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Text(formatDate(todo.dueDate))
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                List {
+                    ForEach(todos.indices, id: \.self) { index in
+                        VStack(alignment: .leading) {
+                            Text(todos[index].title)
+                                .font(.headline)
+                            Text(todos[index].description)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Text(formatDate(todos[index].dueDate))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .contextMenu {
+                            Button(action: {
+                                removeTodo(at: index)
+                            }) {
+                                Text("Remove")
+                                Image(systemName: "trash")
+                            }
+                        }
                     }
                 }
                 .navigationBarTitle("Todo List", displayMode: .inline)
@@ -109,6 +119,13 @@ struct ContentView: View {
         newTodoTitle = ""
         newTodoDescription = ""
         newTodoDueDate = Date()
+    }
+
+    //function to remove the todo in the storage
+    private func removeTodo(at index: Int) {
+        todos.remove(at: index)
+        // Update storage after removal
+        saveTodos()
     }
     
     //function to save the todos to the storage
