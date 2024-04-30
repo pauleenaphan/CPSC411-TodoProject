@@ -32,12 +32,22 @@ struct ContentView: View {
                             .foregroundColor(.secondary)
                     }
                 }
-                .navigationTitle("Todo List")
+                .navigationBarTitle("Todo List", displayMode: .inline)
                 
                 Button(action: addTodo) {
                     Text("Add Todo")
+                        .foregroundColor(.black)
                 }
-                .padding()
+                .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+ 
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.black, lineWidth: 1)
+                )
+                .hoverEffect(.highlight) // Apply hover effect
+
                 
                 //field for user inputs
                 TextField("Title", text: $newTodoTitle)
@@ -73,10 +83,12 @@ struct ContentView: View {
                     }
             }
         }
+
         .onAppear {
             //gets the todos from userdefault when the view pops up
             fetchTodos()
         }
+        
     }
     
     //adds the todo item to userdefault storage
@@ -132,3 +144,6 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
+
+
+
