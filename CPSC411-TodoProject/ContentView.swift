@@ -17,6 +17,10 @@ struct ContentView: View {
     //array to hold the todo items
     @State private var todos: [TodoItem] = []
     
+    // State variables for todo editor sheet
+    @State private var showingTodoEditor = false
+    @State private var selectedTodoIndex = 0
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -32,6 +36,7 @@ struct ContentView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
+                        //select and hold on a todo item to reveal contextMenu
                         .contextMenu {
                             Button(action: {
                                 removeTodo(at: index)
@@ -39,8 +44,20 @@ struct ContentView: View {
                                 Text("Remove")
                                 Image(systemName: "trash")
                             }
+                            Button(action: {
+                                // Set selected todo index for editing
+                                selectedTodoIndex = index
+                                showingTodoEditor = true
+                            }) {
+                                Text("Edit")
+                                Image(systemName: "square.and.pencil")
+                            }
                         }
                     }
+                }
+                // Sheet to edit a selected todo item
+                .sheet(isPresented: $showingTodoEditor) {
+                    TodoEditor(todo: $todos[selectedTodoIndex], onSave: saveTodos)
                 }
                 .navigationBarTitle("Todo List", displayMode: .inline)
                 
@@ -154,6 +171,37 @@ func formatDate(_ date: Date) -> String {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "MM-dd-yyyy"
     return dateFormatter.string(from: date)
+}
+
+//TodoEditor View to display the details of a selected todo item for editing
+struct TodoEditor: View {
+    @Binding var todo: TodoItem
+    let onSave: () -> Void
+
+    var body: some View {
+        VStack {
+            Text("Update Todo")
+                .fontWeight(.bold) // Make title bold
+                .padding(.top, 20) // Add top padding
+            
+            TextField("Title", text: $todo.title)
+                .padding()
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            TextField("Description", text: $todo.description)
+                .padding()
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            DatePicker("Due Date", selection: $todo.dueDate, displayedComponents: .date)
+                .datePickerStyle(DefaultDatePickerStyle())
+                .labelsHidden()
+                .padding()
+            
+            //saves the updated todo to the userdefault storage
+            Button(action: onSave) {
+                Text("Save")
+            }
+            .padding()
+        }
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
